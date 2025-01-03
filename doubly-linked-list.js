@@ -2,10 +2,11 @@ class Node {
   constructor(value) {
     this.value = value;
     this.next = null;
+    this.prev = null;
   }
 }
 
-class SinglyLinkedList {
+class DoublyLinkedList {
   constructor() {
     this.head = null;
     this.tail = null;
@@ -21,10 +22,17 @@ class SinglyLinkedList {
     )
       return null;
 
+    const isNearEnd = index > this.length / 2;
+    let rounds = index;
     let node = this.head;
 
-    for (let i = 0; i < index; i++)
-      node = node.next;
+    if (isNearEnd) {
+      rounds = this.length - index - 1;
+      node = this.tail
+    }
+
+    for (let i = 0; i < rounds; i++)
+      node = isNearEnd ? node.prev : node.next;
 
     return node;
   }
@@ -50,9 +58,12 @@ class SinglyLinkedList {
 
     const newNode = new Node(value);
     const prevNode = this.get(index - 1);
+    const nextNode = prevNode.next;
 
-    newNode.next = prevNode.next;
+    newNode.prev = prevNode;
+    newNode.next = nextNode;
     prevNode.next = newNode;
+    nextNode.prev = newNode;
 
     this.length++;
     return this.length;
@@ -73,11 +84,15 @@ class SinglyLinkedList {
     if (!index)
       return this.shift();
 
-    const prevNode = this.get(index - 1);
-    const currentNode = prevNode.next;
+    const currentNode = this.get(index);
+    const prevNode = currentNode.prev;
+    const nextNode = currentNode.next;
 
-    prevNode.next = currentNode.next;
+    prevNode.next = nextNode;
+    nextNode.prev = prevNode;
     currentNode.next = null;
+    currentNode.prev = null;
+
     this.length--;
     return currentNode;
   }
@@ -86,9 +101,10 @@ class SinglyLinkedList {
   push(value) {
     const node = new Node(value);
 
-    if (this.length)
+    if (this.length) {
       this.tail.next = node;
-    else
+      node.prev = this.tail;
+    } else
       this.head = node;
 
     this.tail = node;
@@ -97,37 +113,36 @@ class SinglyLinkedList {
     return this.length;
   }
 
-  // Time complexity O(n)
+  // Time complexity O(1)
   pop() {
     if (!this.length) return null;
 
-    let prevNode = null;
-    let currentNode = this.head;
+    const lastNode = this.tail;
 
-    while (currentNode.next) {
-      prevNode = currentNode;
-      currentNode = currentNode.next;
+    if (this.length == 1) {
+      this.head = null;
+      this.tail = null;
+    } else {
+      this.tail = lastNode.prev;
+      this.tail.next = null;
+      lastNode.prev = null;
     }
 
-    this.tail = prevNode;
-
-    if (this.length == 1)
-      this.head = null;
-    else
-      this.tail.next = null;
-
     this.length--;
-    return currentNode;
+    return lastNode;
   }
 
   // Time complexity O(1)
   unshift(value) {
     const node = new Node(value);
-    node.next = this.head;
-    this.head = node;
 
-    if (!this.length)
+    if (this.length) {
+      this.head.prev = node;
+      node.next = this.head;
+    } else
       this.tail = node;
+
+    this.head = node;
 
     this.length++;
     return this.length;
@@ -138,17 +153,20 @@ class SinglyLinkedList {
     if (!this.length) return null;
 
     const firstNode = this.head;
-    this.head = firstNode.next;
 
-    if (this.length == 1)
+    if (this.length == 1) {
+      this.head = null;
       this.tail = null;
+    } else {
+      this.head = firstNode.next;
+      this.head.prev = null;
+      firstNode.next = null;
+    }
 
-    firstNode.next = null;
     this.length--;
     return firstNode;
   }
 
-  // Time complexity O(n)
   reverse() {
     if (this.length < 2) return this;
 
@@ -162,6 +180,7 @@ class SinglyLinkedList {
     while (currentNode) {
       nextNode = currentNode.next;
       currentNode.next = prevNode;
+      currentNode.prev = nextNode;
       prevNode = currentNode;
       currentNode = nextNode;
     }
