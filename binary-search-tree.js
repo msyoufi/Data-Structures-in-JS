@@ -115,20 +115,3 @@ class BinarySearchTree {
     return values;
   }
 }
-
-const tree = new BinarySearchTree();
-
-tree.insert(55);
-tree.insert(52);
-tree.insert(15);
-tree.insert(60);
-tree.insert(1);
-tree.insert(32);
-tree.insert(76);
-tree.insert(7);
-tree.insert(56);
-
-console.log(tree.BFS());
-console.log(tree.DFS('pre'));
-console.log(tree.DFS('post'));
-console.log(tree.DFS('in'));
